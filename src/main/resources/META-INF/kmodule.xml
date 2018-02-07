@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://www.drools.org/xsd/kmodule">
+    
+    <kbase name="EventsKB" packages="dummy.events" eventProcessingMode="stream" equalsBehavior="equality">
+        <ksession name="EventsKS" clockType="pseudo" default="true"/>
+    </kbase>
+
+</kmodule>

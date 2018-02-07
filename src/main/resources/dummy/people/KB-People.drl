@@ -3,6 +3,7 @@ package dummy;
 dialect "mvel"
 
 import java.util.LinkedList
+import java.util.Date
 import dummy.model.*
 
 global org.slf4j.Logger logger

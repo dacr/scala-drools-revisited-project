@@ -6,8 +6,12 @@
 		</encoder>
 	</appender>
 
+	<logger name="org.kie" level="WARN"/>
+	<logger name="org.drools" level="WARN"/>
+	
 	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />
 	</root>
+
 </configuration>
 

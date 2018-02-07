@@ -36,7 +36,7 @@ object Dummy {
   def main(args: Array[String]) {
     logger.warn("# test me through test cases...")
     logger.warn("run 'sbt test'")
-    analyze(model1, "KB-People.drl")
+    analyze(model1, "dummy/people/KB-People.drl")
   }
 
 
@@ -86,7 +86,6 @@ object Dummy {
       for (error <- errors.asScala) logger.error(error.getMessage())
       throw new IllegalArgumentException("Problem with the Knowledge base");
     }
-
 
     val kbase = kbuilder.newKieBase()
     
