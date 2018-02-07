@@ -84,15 +84,15 @@ class DummyTest extends FunSuite {
       kbase.addPackages(kbuilder.getKnowledgePackages)
 
       val cpuPeakType = kbase.getFactType("dummy.events", "CpuPeak")
-      val updateEventType = kbase.getFactType("dummy.events", "UpdateEvent")
+      val startEventType = kbase.getFactType("dummy.events", "StartEvent")
 
       val peak1 = cpuPeakType.newInstance
       cpuPeakType.set(peak1, "host", "dummyHost")
       cpuPeakType.set(peak1, "value", 94)
 
-      val update1 = updateEventType.newInstance()
-      updateEventType.set(update1, "host", "dummyHost")
-      updateEventType.set(update1, "name", "fakeApp")
+      val update1 = startEventType.newInstance()
+      startEventType.set(update1, "host", "dummyHost")
+      startEventType.set(update1, "name", "fakeApp")
 
 
       val found = using(kbase.newKieSession(ksconfig, null)) { session =>
@@ -145,15 +145,15 @@ class DummyTest extends FunSuite {
 
 
       val cpuPeakType = kbase.getFactType("dummy", "CpuPeak")
-      val updateEventType = kbase.getFactType("dummy", "UpdateEvent")
+      val startEventType = kbase.getFactType("dummy", "UpdateEvent")
 
       val peak1 = cpuPeakType.newInstance
       cpuPeakType.set(peak1, "host", "dummyHost")
       cpuPeakType.set(peak1, "value", 94)
 
-      val update1 = updateEventType.newInstance()
-      updateEventType.set(update1, "host", "dummyHost")
-      updateEventType.set(update1, "name", "fakeApp")
+      val update1 = startEventType.newInstance()
+      startEventType.set(update1, "host", "dummyHost")
+      startEventType.set(update1, "name", "fakeApp")
 
 
       val found = using(kbase.newKieSession()) { session =>

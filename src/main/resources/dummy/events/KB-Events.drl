@@ -3,42 +3,41 @@ package dummy.events;
 dialect "mvel"
 
 import java.util.Date
+import java.util.LinkedList
 
 global org.slf4j.Logger logger
 
 // --------------------------------------------------------------
-
-declare UpdateEvent
+declare StartEvent
   @role(event)
-  @expire(2m)
   name: String
   host: String
 end
 
+// --------------------------------------------------------------
 declare CpuPeak
   @role(event)
-  @expire(2m)
   host: String
   value: int
 end
 
-
-
+// --------------------------------------------------------------
 rule "CPU issue"
 when
   $peak: CpuPeak($host:host, value > 90)
+  LinkedList(size == 0) from collect (
+    StartEvent(host==$host, this before[5s] $peak)
+  )
 then
-  logger.info("very high CPU issue for host"+$host)
+  logger.info("very high CPU issue for host "+$host)
 end
 
-
-
-
+// --------------------------------------------------------------
 rule "NO CPU issue"
 when
   $peak: CpuPeak($host:host, value > 90)
-  UpdateEvent(host==$host, this before[5s,0s] $peak)  
+  StartEvent(host==$host, this before[0,5s] $peak)  
 then
-  logger.info("THIS IS not a high CPU issue for host"+$host)
+  logger.info("THIS IS not a high CPU issue for host "+$host)
 end
 

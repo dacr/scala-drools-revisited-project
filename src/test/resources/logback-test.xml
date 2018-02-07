@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+
+<!-- a schema for basic/simple logback configuration, doesn't cover everything -->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="http://www.padual.com/java/logback.xsd">
+
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%d{HH:mm:ss} %-5level %logger - %msg%n</pattern>
 		</encoder>
 	</appender>
-
+    
 	<logger name="org.kie" level="WARN"/>
 	<logger name="org.drools" level="WARN"/>
 	
@@ -14,4 +18,3 @@
 	</root>
 
 </configuration>
-
