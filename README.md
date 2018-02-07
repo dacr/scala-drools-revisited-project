@@ -1,4 +1,6 @@
-#Drools & Scala usage example
+# Drools expert and fusion usage examples
+(this project has been forked from [this original one](https://github.com/dacr/scala-drools-dummy-project))
+
 
 ```
 $ sbt test
