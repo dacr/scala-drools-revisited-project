@@ -20,7 +20,7 @@ scalacOptions ++= Seq(
 libraryDependencies ++= Seq(
     "drools-compiler",
     "drools-core"
-).map("org.drools" % _ % "7.5.0.Final")
+).map("org.drools" % _ % "7.6.0.Final")
 
 
 libraryDependencies ++= Seq(
@@ -29,7 +29,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.4" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
 initialCommands in console := """
