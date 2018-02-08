@@ -22,12 +22,20 @@ declare CpuPeak
 end
 
 // --------------------------------------------------------------
+rule "init"
+when
+then
+  //insert( new CpuPeak("dummyHost", 95) )
+  //insert( new StartEvent("dummyHost") )
+  logger.info("INITIALIZED")
+end
+
+
+// --------------------------------------------------------------
 rule "CPU issue"
 when
   $peak: CpuPeak($host:host, value > 90)
-  LinkedList(size == 0) from collect (
-    StartEvent(host==$host, this before[5s] $peak)
-  )
+  not StartEvent(host==$host, this before[5s] $peak)
 then
   logger.info("very high CPU issue for host "+$host)
 end
@@ -36,7 +44,7 @@ end
 rule "NO CPU issue"
 when
   $peak: CpuPeak($host:host, value > 90)
-  StartEvent(host==$host, this before[0,5s] $peak)  
+  StartEvent(host==$host, this before[0,5s] $peak)
 then
   logger.info("THIS IS not a high CPU issue for host "+$host)
 end

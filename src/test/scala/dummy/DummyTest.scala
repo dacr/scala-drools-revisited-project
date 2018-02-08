@@ -86,22 +86,21 @@ class DummyTest extends FunSuite {
       val cpuPeakType = kbase.getFactType("dummy.events", "CpuPeak")
       val startEventType = kbase.getFactType("dummy.events", "StartEvent")
 
-      val peak1 = cpuPeakType.newInstance
-      cpuPeakType.set(peak1, "host", "dummyHost")
-      cpuPeakType.set(peak1, "value", 94)
-
-      val update1 = startEventType.newInstance()
-      startEventType.set(update1, "host", "dummyHost")
-      startEventType.set(update1, "name", "fakeApp")
-
-
       val found = using(kbase.newKieSession(ksconfig, null)) { session =>
         session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
 
         val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
 
+        val update1 = startEventType.newInstance()
+        startEventType.set(update1, "host", "dummyHost")
+        startEventType.set(update1, "name", "fakeApp")
         session.insert(update1)
+
         clock.advanceTime(10, TimeUnit.SECONDS)
+
+        val peak1 = cpuPeakType.newInstance
+        cpuPeakType.set(peak1, "host", "dummyHost")
+        cpuPeakType.set(peak1, "value", 94)
         session.insert(peak1)
 
         session.fireAllRules()
