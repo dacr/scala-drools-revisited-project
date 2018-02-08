@@ -91,10 +91,10 @@ class DummyTest extends FunSuite {
 
         val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
 
-        val update1 = startEventType.newInstance()
-        startEventType.set(update1, "host", "dummyHost")
-        startEventType.set(update1, "name", "fakeApp")
-        session.insert(update1)
+        val start1 = startEventType.newInstance()
+        startEventType.set(start1, "host", "dummyHost")
+        startEventType.set(start1, "name", "fakeApp")
+        session.insert(start1)
 
         clock.advanceTime(10, TimeUnit.SECONDS)
 
@@ -102,6 +102,14 @@ class DummyTest extends FunSuite {
         cpuPeakType.set(peak1, "host", "dummyHost")
         cpuPeakType.set(peak1, "value", 94)
         session.insert(peak1)
+
+        clock.advanceTime(45, TimeUnit.MINUTES)
+
+        val start2 = startEventType.newInstance()
+        startEventType.set(start2, "host", "dummyHost")
+        startEventType.set(start2, "name", "fakeApp")
+        session.insert(start2)
+
 
         session.fireAllRules()
         session.getObjects()

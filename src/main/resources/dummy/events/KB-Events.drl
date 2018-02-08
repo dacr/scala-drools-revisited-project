@@ -35,10 +35,35 @@ end
 rule "CPU issue"
 when
   $peak: CpuPeak($host:host, value > 90)
-  not StartEvent(host==$host, this before[5s] $peak)
+  not StartEvent(host==$host, this before[0s, 20s] $peak)
 then
   logger.info("very high CPU issue for host "+$host)
 end
+
+// --------------------------------------------------------------
+rule "Restart issue"
+when
+  $evt1:StartEvent($host:host)
+  StartEvent(this != $evt1, host==$host, this before[0s, 2h] $evt1)
+then
+  logger.info("Service restart issue, frequency lower than 2h for host "+$host)
+end
+
+// --------------------------------------------------------------
+rule "Restart loop issue"
+when
+  $evt1:StartEvent($host:host, $name:name)
+  LinkedList(size>5) from collect (
+    StartEvent(
+       this != $evt1,
+       host==$host,
+       name==$name,
+       this before[0s, 10h] $evt1)
+  )
+then
+  logger.info("Service restart loop issue too many restarts on host "+$host)
+end
+
 
 // --------------------------------------------------------------
 rule "NO CPU issue"
