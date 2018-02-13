@@ -38,6 +38,9 @@ import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.KieSessionConfiguration
 import org.kie.api.runtime.conf.ClockTypeOption
 
+import scala.concurrent._
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 case class Hello(message:String)
 case class HelloResponse(message:String)
@@ -269,14 +272,28 @@ class DummyTest extends FunSuite {
     val ksConf = kServices.newKieSessionConfiguration()
     ksConf.setOption(ClockTypeOption.get("pseudo"))
 
+    val pingType = kbase.getFactType("dummy.streamevents", "Ping")
+    pingType should not be(null)
+    def ping() = {
+      pingType.newInstance()
+    }
+
     val found = using(kbase.newKieSession(ksConf,ksEnv)) { session =>
       session.setGlobal("logger", LoggerFactory.getLogger("KBEvents-KIE"))
 
       val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
 
+      val engine = Future {
+        blocking {
+          session.fireUntilHalt()
+        }
+      }
+      session.insert(ping())
 
-      session.fireAllRules()
-      session.getObjects()
+      session.destroy()
+      Await.ready(engine, 10.seconds)
+
+      session.getObjects().size should be >(0)
     }
 
   }

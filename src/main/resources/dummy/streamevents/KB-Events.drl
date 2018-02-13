@@ -8,6 +8,18 @@ import java.util.LinkedList
 global org.slf4j.Logger logger
 
 // --------------------------------------------------------------
+declare Ping
+  @role(event)
+  @expires(10s)
+end
+
+// --------------------------------------------------------------
+declare Pong
+  @role(event)
+  @expires(10s)
+end
+
+// --------------------------------------------------------------
 declare StartEvent
   @role(event)
   @timestamp(datetime)
