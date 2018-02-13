@@ -1,0 +1,36 @@
+package dummy.streamevents;
+
+dialect "mvel"
+
+import java.util.Date
+import java.util.LinkedList
+
+global org.slf4j.Logger logger
+
+// --------------------------------------------------------------
+declare Ping
+  @role(event)
+  @expires(10s)
+end
+
+// --------------------------------------------------------------
+declare Pong
+  @role(event)
+  @expires(10s)
+end
+
+// --------------------------------------------------------------
+rule "init"
+when
+then
+  logger.info("INITIALIZED")
+end
+
+// --------------------------------------------------------------
+rule "ping"
+when
+  Ping()
+then
+  logger.info("Pong")
+  insert(new Pong())
+end

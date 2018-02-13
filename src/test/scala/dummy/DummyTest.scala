@@ -34,6 +34,7 @@ import org.kie.internal.builder.KnowledgeBuilderFactory
 import org.kie.internal.io.ResourceFactory
 import org.slf4j.LoggerFactory
 import org.kie.api.KieServices
+import org.kie.api.event.rule.{ObjectDeletedEvent, ObjectInsertedEvent, ObjectUpdatedEvent, RuleRuntimeEventListener}
 import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.KieSessionConfiguration
 import org.kie.api.runtime.conf.ClockTypeOption
@@ -41,6 +42,7 @@ import org.kie.api.runtime.conf.ClockTypeOption
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 
 case class Hello(message:String)
 case class HelloResponse(message:String)
@@ -102,7 +104,7 @@ class DummyTest extends FunSuite {
     }
 
     val all = found.asScala collect { case x:Information => x}
-    all.foreach{i=> info(i.toString)}
+    //all.foreach{i=> info(i.toString)}
     
     val valuableInfos = all collect { case x:InformationRemarkable => x}
     val partialInfos = all collect { case x:InformationRequest => x}
@@ -254,19 +256,13 @@ class DummyTest extends FunSuite {
 
 
 
-  test("events stream test") {
+  test("events very simple stream oriented test") {
 
     val kServices = KieServices.Factory.get
     val kContainer = kServices.getKieClasspathContainer()
     val conf = kServices.newKieBaseConfiguration()
-    val kbase = kContainer.newKieBase("StreamEventsKB", conf)
+    val kbase = kContainer.newKieBase("StreamPingPongKB", conf)
 
-
-    val cpuPeakType = kbase.getFactType("dummy.streamevents", "CpuPeak")
-    val startEventType = kbase.getFactType("dummy.streamevents", "StartEvent")
-
-    cpuPeakType should not be(null)
-    startEventType should not be(null)
 
     val ksEnv = kServices.newEnvironment()
     val ksConf = kServices.newKieSessionConfiguration()
@@ -279,9 +275,22 @@ class DummyTest extends FunSuite {
     }
 
     val found = using(kbase.newKieSession(ksConf,ksEnv)) { session =>
-      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents-KIE"))
+      session.setGlobal("logger", LoggerFactory.getLogger("KBPingPong"))
 
       val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
+
+      val pongPromise = Promise[Object]()
+
+      session.addEventListener(new RuleRuntimeEventListener {
+        override def objectDeleted(event: ObjectDeletedEvent): Unit = {}
+        override def objectUpdated(event: ObjectUpdatedEvent): Unit = {}
+        override def objectInserted(event: ObjectInsertedEvent): Unit = {
+          Option(event.getRule).map { rule =>
+            pongPromise.complete(Success(event.getObject))
+          }
+        }
+      })
+
 
       val engine = Future {
         blocking {
@@ -289,11 +298,14 @@ class DummyTest extends FunSuite {
         }
       }
       session.insert(ping())
+      val r = Await.result(pongPromise.future, 10.seconds)
 
-      session.destroy()
+      r.getClass.getCanonicalName should include("Pong")
+
+      session.halt()
       Await.ready(engine, 10.seconds)
 
-      session.getObjects().size should be >(0)
+      session.getObjects().size should be >(1)
     }
 
   }
