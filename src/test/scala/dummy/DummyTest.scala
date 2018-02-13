@@ -203,4 +203,36 @@ class DummyTest extends FunSuite {
 
 
 
+
+  test("events stream test") {
+
+    val kServices = KieServices.Factory.get
+    val kContainer = kServices.getKieClasspathContainer()
+    val conf = kServices.newKieBaseConfiguration()
+    val kbase = kContainer.newKieBase("StreamEventsKB", conf)
+
+
+    val cpuPeakType = kbase.getFactType("dummy.streamevents", "CpuPeak")
+    val startEventType = kbase.getFactType("dummy.streamevents", "StartEvent")
+
+    cpuPeakType should not be(null)
+    startEventType should not be(null)
+
+    val ksEnv = kServices.newEnvironment()
+    val ksConf = kServices.newKieSessionConfiguration()
+    ksConf.setOption(ClockTypeOption.get("pseudo"))
+
+    val found = using(kbase.newKieSession(ksConf,ksEnv)) { session =>
+      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents-KIE"))
+
+      val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
+
+
+      session.fireAllRules()
+      session.getObjects()
+    }
+
+  }
+
+
 }
