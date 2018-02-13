@@ -44,7 +44,7 @@ class DummyTest extends FunSuite {
   
   
   
-  ignore("fired up test") {
+  test("fired up test") {
     val found = Dummy.analyze(Dummy.model1, "dummy/people/KB-People.drl")
     val all = found.asScala collect { case x:Information => x}
     all.foreach{i=> info(i.toString)}
@@ -59,127 +59,116 @@ class DummyTest extends FunSuite {
   }
   
   
-  test("event test using classic API") {
-    try {
-      val kconfig = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration()
-      kconfig.setProperty("drools.dialect.mvel.strict", "false")
-      
-      val kbconfig = KnowledgeBaseFactory.newKnowledgeBaseConfiguration()
-      kbconfig.setOption( EventProcessingOption.STREAM )
+  test("event test using drools expert classic API") {
+    val kconfig = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration()
+    kconfig.setProperty("drools.dialect.mvel.strict", "false")
 
-      val ksconfig = KnowledgeBaseFactory.newKnowledgeSessionConfiguration()
-      ksconfig.setOption( ClockTypeOption.get("pseudo") )
-      
-      val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(kconfig)
-      val res = ResourceFactory.newClassPathResource("dummy/events/KB-Events.drl")
-      kbuilder.add(res, ResourceType.DRL)
+    val kbconfig = KnowledgeBaseFactory.newKnowledgeBaseConfiguration()
+    kbconfig.setOption( EventProcessingOption.STREAM )
 
-      val errors = kbuilder.getErrors();
-      if (errors.size() > 0) {
-        for (error <- errors.asScala) logger.error(error.getMessage())
-        throw new IllegalArgumentException("Problem with the Knowledge base");
-      }
+    val ksconfig = KnowledgeBaseFactory.newKnowledgeSessionConfiguration()
+    ksconfig.setOption( ClockTypeOption.get("pseudo") )
 
-      val kbase = KnowledgeBaseFactory.newKnowledgeBase( kbconfig )
-      kbase.addPackages(kbuilder.getKnowledgePackages)
+    val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(kconfig)
+    val res = ResourceFactory.newClassPathResource("dummy/events/KB-Events.drl")
+    kbuilder.add(res, ResourceType.DRL)
 
-      val cpuPeakType = kbase.getFactType("dummy.events", "CpuPeak")
-      val startEventType = kbase.getFactType("dummy.events", "StartEvent")
-
-      val found = using(kbase.newKieSession(ksconfig, null)) { session =>
-        session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
-
-        val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
-
-        val start1 = startEventType.newInstance()
-        startEventType.set(start1, "host", "dummyHost")
-        startEventType.set(start1, "name", "fakeApp")
-        session.insert(start1)
-
-        clock.advanceTime(10, TimeUnit.SECONDS)
-
-        val peak1 = cpuPeakType.newInstance
-        cpuPeakType.set(peak1, "host", "dummyHost")
-        cpuPeakType.set(peak1, "value", 94)
-        session.insert(peak1)
-
-        clock.advanceTime(45, TimeUnit.MINUTES)
-
-        val start2 = startEventType.newInstance()
-        startEventType.set(start2, "host", "dummyHost")
-        startEventType.set(start2, "name", "fakeApp")
-        session.insert(start2)
-
-
-        session.fireAllRules()
-        session.getObjects()
-      }
-
-      found.size() should be > 0
-    } catch {
-      case e:Exception => e.printStackTrace()
+    val errors = kbuilder.getErrors();
+    if (errors.size() > 0) {
+      for (error <- errors.asScala) logger.error(error.getMessage())
+      throw new IllegalArgumentException("Problem with the Knowledge base");
     }
-    
+
+    val kbase = KnowledgeBaseFactory.newKnowledgeBase( kbconfig )
+    kbase.addPackages(kbuilder.getKnowledgePackages)
+
+    val cpuPeakType = kbase.getFactType("dummy.events", "CpuPeak")
+    val startEventType = kbase.getFactType("dummy.events", "StartEvent")
+    cpuPeakType should not be(null)
+    startEventType should not be(null)
+
+    val found = using(kbase.newKieSession(ksconfig, null)) { session =>
+      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
+
+      val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
+
+      val start1 = startEventType.newInstance()
+      startEventType.set(start1, "host", "dummyHost")
+      startEventType.set(start1, "name", "fakeApp")
+      session.insert(start1)
+
+      clock.advanceTime(10, TimeUnit.SECONDS)
+
+      val peak1 = cpuPeakType.newInstance
+      cpuPeakType.set(peak1, "host", "dummyHost")
+      cpuPeakType.set(peak1, "value", 94)
+      session.insert(peak1)
+
+      clock.advanceTime(45, TimeUnit.MINUTES)
+
+      val start2 = startEventType.newInstance()
+      startEventType.set(start2, "host", "dummyHost")
+      startEventType.set(start2, "name", "fakeApp")
+      session.insert(start2)
+
+
+      session.fireAllRules()
+      session.getObjects()
+    }
+
+    found.size() should be > 0
   }
   
   
   
   
   
-  ignore("event test using KIE (Knowledge Is Everywhere") {
-    try {
+  test("event test using KIE API (KIE = Knowledge Is Everywhere)") {
 
-      val kServices = KieServices.Factory.get
-      val kContainer = kServices.getKieClasspathContainer()
-      val conf = kServices.newKieBaseConfiguration()
-      val kbase = kContainer.newKieBase("EventsKB", conf)
-      
-      /*
-      val config = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration()
-      //config.setProperty("drools.dialect.mvel.strict", "false")
-      //config.setOption( EventProcessingOption.STREAM )
-      config.setOption(ClockTypeOption.get("pseudo"))
-      val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(config)
-      val res = ResourceFactory.newClassPathResource("KB-Events.drl")
-      kbuilder.add(res, ResourceType.DRL)
-
-      val errors = kbuilder.getErrors();
-      if (errors.size() > 0) {
-        for (error <- errors.asScala) logger.error(error.getMessage())
-        throw new IllegalArgumentException("Problem with the Knowledge base");
-      }
-      */
+    val kServices = KieServices.Factory.get
+    val kContainer = kServices.getKieClasspathContainer()
+    val conf = kServices.newKieBaseConfiguration()
+    val kbase = kContainer.newKieBase("EventsKB", conf)
 
 
-      val cpuPeakType = kbase.getFactType("dummy", "CpuPeak")
-      val startEventType = kbase.getFactType("dummy", "UpdateEvent")
+    val cpuPeakType = kbase.getFactType("dummy.events", "CpuPeak")
+    val startEventType = kbase.getFactType("dummy.events", "StartEvent")
+
+    cpuPeakType should not be(null)
+    startEventType should not be(null)
+
+    val ksEnv = kServices.newEnvironment()
+    val ksConf = kServices.newKieSessionConfiguration()
+    ksConf.setOption(ClockTypeOption.get("pseudo"))
+
+    val found = using(kbase.newKieSession(ksConf,ksEnv)) { session =>
+      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
+
+      val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
+
+      val start1 = startEventType.newInstance()
+      startEventType.set(start1, "host", "dummyHost")
+      startEventType.set(start1, "name", "fakeApp")
+      session.insert(start1)
+
+      clock.advanceTime(10, TimeUnit.SECONDS)
 
       val peak1 = cpuPeakType.newInstance
       cpuPeakType.set(peak1, "host", "dummyHost")
       cpuPeakType.set(peak1, "value", 94)
+      session.insert(peak1)
 
-      val update1 = startEventType.newInstance()
-      startEventType.set(update1, "host", "dummyHost")
-      startEventType.set(update1, "name", "fakeApp")
+      clock.advanceTime(45, TimeUnit.MINUTES)
 
+      val start2 = startEventType.newInstance()
+      startEventType.set(start2, "host", "dummyHost")
+      startEventType.set(start2, "name", "fakeApp")
+      session.insert(start2)
 
-      val found = using(kbase.newKieSession()) { session =>
-        session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
-
-        val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
-
-        session.insert(update1)
-        clock.advanceTime(10, TimeUnit.SECONDS)
-        session.insert(peak1)
-
-        session.fireAllRules()
-        session.getObjects()
-      }
-
-      found.size() should be > 0
-    } catch {
-      case e:Exception => e.printStackTrace()
+      session.fireAllRules()
+      session.getObjects()
     }
+
   }
   
   

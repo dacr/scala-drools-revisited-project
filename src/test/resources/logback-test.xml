@@ -10,8 +10,8 @@
 		</encoder>
 	</appender>
     
-	<logger name="org.kie" level="WARN"/>
-	<logger name="org.drools" level="WARN"/>
+	<logger name="org.kie" level="ERROR"/>
+	<logger name="org.drools" level="ERROR"/>
 	
 	<root level="DEBUG">
 		<appender-ref ref="STDOUT" />
