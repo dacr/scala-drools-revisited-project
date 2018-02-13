@@ -50,7 +50,54 @@ class DummyTest extends FunSuite {
   
   
   test("fired up test") {
-    val found = Dummy.analyze(Dummy.model1, "dummy/people/KB-People.drl")
+    def model = {
+      val martine = Someone(name="Martine", age=30, nicknames=List("titine", "titi").asJava, attributes=Map("hairs"->"brown").asJava)
+      val martin  = Someone(name="Martin", age=40, nicknames=List("tintin", "titi").asJava, attributes=Map("hairs"->"black").asJava)
+      val jack    = Someone(name="Jack", age=12, nicknames=List("jacquouille").asJava, attributes=Map("eyes"->"blue").asJava)
+      val martineCar = Car(martine, "Ford", 2010, Color.blue)
+      val martinCar  = Car(martin, "GM", 2010, Color.black)
+      val martinCar2 = Car(martin, "Ferrari", 2012, Color.red)
+      val martinCar3 = Car(martin, "Porshe", 2011, Color.red)
+
+      val martinHome = Home(martin, None)
+      val jackHome   = Home(jack, Some(Address("221B Baker Street", "London", "England")))
+
+      List(
+        martine,
+        martin,
+        jack,
+        martineCar,
+        martinCar,
+        martinCar2,
+        martinCar3,
+        martinHome,
+        jackHome
+      )
+    }
+
+    //System.setProperty("drools.dialect.java.compiler", "JANINO")
+    val config = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration()
+    config.setProperty("drools.dialect.mvel.strict", "false")
+    val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(config)
+
+    val res = ResourceFactory.newClassPathResource("dummy/people/KB-People.drl")
+    kbuilder.add(res, ResourceType.DRL)
+
+    val errors = kbuilder.getErrors();
+    if (errors.size() > 0) {
+      for (error <- errors.asScala) logger.error(error.getMessage())
+      throw new IllegalArgumentException("Problem with the Knowledge base");
+    }
+
+    val kbase = kbuilder.newKieBase()
+
+    val found = using(kbase.newKieSession()) { session =>
+      session.setGlobal("logger", LoggerFactory.getLogger("KBPeople"))
+      model.foreach(session.insert(_))
+      session.fireAllRules()
+      session.getObjects()
+    }
+
     val all = found.asScala collect { case x:Information => x}
     all.foreach{i=> info(i.toString)}
     
