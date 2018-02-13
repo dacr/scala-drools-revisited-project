@@ -49,7 +49,7 @@ case class HelloResponse(message:String)
 
 
 class DummyTest extends FunSuite {
-  val logger = LoggerFactory.getLogger(Dummy.getClass())
+  val logger = LoggerFactory.getLogger("DummyTest")
 
   
   
