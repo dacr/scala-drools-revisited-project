@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "ch.qos.logback"          %  "logback-classic"   % versions.logback,
   "com.softwaremill.sttp"   %% "core"              % versions.shttp,
-  "com.softwaremill.sttp"   %% "circe"             % versions.shttp,
+  "com.softwaremill.sttp"   %% "json4s"            % versions.shttp,
   "com.softwaremill.sttp"   %% "akka-http-backend" % versions.shttp,
   "org.scalatest"           %% "scalatest"         % versions.scalatest % "test"
 )
