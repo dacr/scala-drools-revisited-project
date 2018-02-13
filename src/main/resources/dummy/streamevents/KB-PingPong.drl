@@ -30,6 +30,7 @@ end
 rule "ping"
 when
   Ping()
+  not Pong()
 then
   logger.info("Pong")
   insert(new Pong())
