@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://www.drools.org/xsd/kmodule">
-    
-    <kbase name="EventsKB" packages="dummy.events" eventProcessingMode="cloud" equalsBehavior="equality">
+
+    <kbase name="HelloKB" packages="dummy.hello" eventProcessingMode="cloud" equalsBehavior="equality">
+        <ksession name="HelloKS" default="true"/>
+    </kbase>
+
+
+    <kbase name="EventsKB" packages="dummy.events" eventProcessingMode="stream" equalsBehavior="equality">
         <ksession name="EventsKS" clockType="realtime" default="true"/>
     </kbase>
+
+    <kbase name="StreamEventsKB" packages="dummy.streamevents" eventProcessingMode="stream" equalsBehavior="equality">
+        <ksession name="StreamEventsKS" clockType="realtime" default="true"/>
+    </kbase>
+
 
 </kmodule>

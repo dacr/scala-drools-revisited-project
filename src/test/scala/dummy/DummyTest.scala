@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
 
 import org.scalatest._
 import Matchers._
+import OptionValues._
 import dummy.Dummy.{logger, using}
 
 import collection.JavaConverters._
@@ -36,6 +37,10 @@ import org.kie.api.KieServices
 import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.KieSessionConfiguration
 import org.kie.api.runtime.conf.ClockTypeOption
+
+
+case class Hello(message:String)
+case class HelloResponse(message:String)
 
 
 class DummyTest extends FunSuite {
@@ -57,7 +62,32 @@ class DummyTest extends FunSuite {
     
     partialInfos.map(_.someone.name) should contain("Martine")
   }
-  
+
+
+
+
+  test("minimalist kie api usage test") {
+    val kServices = KieServices.Factory.get
+    val kContainer = kServices.getKieClasspathContainer()
+    val conf = kServices.newKieBaseConfiguration()
+    val kbase = kContainer.newKieBase("HelloKB", conf)
+
+    using(kbase.newKieSession) { session =>
+      session.setGlobal("logger", LoggerFactory.getLogger("HelloKB"))
+
+      session.insert(Hello("world"))
+
+      session.fireAllRules()
+
+      val messages = session.getObjects().asScala.collect {case HelloResponse(msg) => msg}
+      messages should have size(1)
+      messages.headOption.value should equal("cool")
+    }
+  }
+
+
+
+
   
   test("event test using drools expert classic API") {
     val kconfig = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration()
@@ -88,7 +118,7 @@ class DummyTest extends FunSuite {
     startEventType should not be(null)
 
     val found = using(kbase.newKieSession(ksconfig, null)) { session =>
-      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
+      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents-CLASSIC"))
 
       val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
 
@@ -142,7 +172,7 @@ class DummyTest extends FunSuite {
     ksConf.setOption(ClockTypeOption.get("pseudo"))
 
     val found = using(kbase.newKieSession(ksConf,ksEnv)) { session =>
-      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents"))
+      session.setGlobal("logger", LoggerFactory.getLogger("KBEvents-KIE"))
 
       val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
 
@@ -170,6 +200,7 @@ class DummyTest extends FunSuite {
     }
 
   }
-  
-  
+
+
+
 }

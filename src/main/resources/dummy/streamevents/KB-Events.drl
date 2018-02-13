@@ -1,0 +1,71 @@
+package dummy.streamevents;
+
+dialect "mvel"
+
+import java.util.Date
+import java.util.LinkedList
+
+global org.slf4j.Logger logger
+
+// --------------------------------------------------------------
+declare StartEvent
+  @role(event)
+  @timestamp(datetime)
+  @expires(24h)
+  datetime: Date
+  name: String
+  host: String
+end
+
+// --------------------------------------------------------------
+declare CpuPeak
+  @role(event)
+  @timestamp(datetime)
+  datetime: Date
+  host: String
+  value: int
+end
+
+// --------------------------------------------------------------
+rule "init"
+when
+then
+  //insert( new CpuPeak("dummyHost", 95) )
+  //insert( new StartEvent("dummyHost") )
+  //logger.info("INITIALIZED")
+end
+
+
+// --------------------------------------------------------------
+rule "CPU issue"
+when
+  $peak: CpuPeak($host:host, value > 90)
+  not StartEvent(host==$host, this before[0s, 20s] $peak)
+then
+  logger.info("very high CPU issue for host "+$host)
+end
+
+// --------------------------------------------------------------
+rule "Restart issue"
+when
+  $evt1:StartEvent($host:host)
+  StartEvent(this != $evt1, host==$host, this before[0s, 2h] $evt1)
+then
+  logger.info("Service restart issue, frequency lower than 2h for host "+$host)
+end
+
+// --------------------------------------------------------------
+rule "Restart loop issue"
+when
+  $evt1:StartEvent($host:host, $name:name)
+  LinkedList(size>5) from collect (
+    StartEvent(
+       this != $evt1,
+       host==$host,
+       name==$name,
+       this before[0s, 10h] $evt1)
+  )
+then
+  logger.info("Service restart loop issue too many restarts on host "+$host)
+end
+
