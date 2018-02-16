@@ -1,4 +1,4 @@
-name := "ScalaDroolsDummyProject"
+name := "ScalaDroolsRevistedDummyProject"
 
 version := "5"
 

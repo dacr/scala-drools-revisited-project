@@ -16,8 +16,9 @@
 
 package dummy
 
+import java.util.Date
 import java.util.concurrent.TimeUnit
-
+import java.util.{Map=>JMap, HashMap=>JHashMap}
 import org.scalatest._
 import Matchers._
 import OptionValues._
@@ -34,6 +35,7 @@ import org.kie.internal.builder.KnowledgeBuilderFactory
 import org.kie.internal.io.ResourceFactory
 import org.slf4j.LoggerFactory
 import org.kie.api.KieServices
+import org.kie.api.definition.`type`.{Role, Timestamp}
 import org.kie.api.event.rule.{ObjectDeletedEvent, ObjectInsertedEvent, ObjectUpdatedEvent, RuleRuntimeEventListener}
 import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.KieSessionConfiguration
@@ -47,6 +49,21 @@ import scala.util.Success
 case class Hello(message:String)
 case class HelloResponse(message:String)
 
+@Role(Role.Type.EVENT)
+@Timestamp("timestamp")
+trait GenericEvent {
+  val kind: String
+  val props: JMap[String, String]
+  val timestamp: Date
+}
+
+case class Event(
+  kind:String,
+  props:JMap[String,String]=new JHashMap(),
+  timestamp:Date=new Date()
+) extends GenericEvent
+
+case class EventDecision(name:String)
 
 class DummyTest extends FunSuite {
   val logger = LoggerFactory.getLogger("DummyTest")
@@ -138,6 +155,33 @@ class DummyTest extends FunSuite {
   }
 
 
+
+
+  test("map kie api usage test") {
+    val kServices = KieServices.Factory.get
+    val kContainer = kServices.getKieClasspathContainer()
+    val conf = kServices.newKieBaseConfiguration()
+    val kbase = kContainer.newKieBase("MapKB", conf)
+
+    using(kbase.newKieSession) { session =>
+      session.setGlobal("logger", LoggerFactory.getLogger("MapKB"))
+
+      val fact1 = Event("truc")
+      val fact2 = Event("machin", Map("x"->"1").asJava)
+      val fact3 = Event("machin", Map("x"->"2", "y"->"3").asJava)
+      
+      session.insert(fact1)
+      session.insert(fact2)
+      session.insert(fact3)
+
+      session.fireAllRules()
+
+      val messages = session.getObjects().asScala.collect {case EventDecision(msg) => msg}
+      messages should have size(3)
+      messages.filter(_.contains("truc")) should have size(1)
+      messages.filter(_.contains("machin")) should have size(2)
+    }
+  }
 
 
   
