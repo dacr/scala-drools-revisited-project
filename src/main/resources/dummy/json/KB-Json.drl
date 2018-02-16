@@ -1,0 +1,21 @@
+package dummy.json
+
+dialect "mvel"
+
+global org.slf4j.Logger logger
+
+
+declare Bidule
+  name: String
+  age: int
+end
+
+// ------------------------------------------------------------------
+
+rule "bidule"
+when
+  $bidule: Bidule(name=="John Doe")
+then
+  logger.info("truc rule fired up "+$bidule)
+  insert(new String("blah"))
+end

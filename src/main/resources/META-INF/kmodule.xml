@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <kmodule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://www.drools.org/xsd/kmodule">
 
@@ -6,10 +7,14 @@
         <ksession name="HelloKS" default="true"/>
     </kbase>
 
+    <kbase name="JsonKB" packages="dummy.json" eventProcessingMode="cloud" equalsBehavior="equality">
+        <ksession name="JsonKS" default="true"/>
+    </kbase>
+
     <kbase name="MapKB" packages="dummy.maps" eventProcessingMode="stream" equalsBehavior="equality">
         <ksession name="MapKS" clockType="realtime" default="true"/>
     </kbase>
-
+    
 
     <kbase name="EventsKB" packages="dummy.events" eventProcessingMode="stream" equalsBehavior="equality">
         <ksession name="EventsKS" clockType="realtime" default="true"/>
@@ -18,6 +23,5 @@
     <kbase name="StreamPingPongKB" packages="dummy.streamevents" eventProcessingMode="stream" equalsBehavior="equality">
         <ksession name="StreamPingPongKS" clockType="realtime" default="true"/>
     </kbase>
-
 
 </kmodule>
