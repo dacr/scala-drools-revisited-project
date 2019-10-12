@@ -1,27 +1,18 @@
-name := "ScalaDroolsRevistedDummyProject"
+name := "scala-drools-revisited-dummy-Project"
 
-version := "5"
+version := "6"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.13.1"
 
 testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/junitresults")
 
 enablePlugins(JavaAppPackaging)
 
-scalacOptions ++= Seq(
-  "-unchecked",
-  "-deprecation",
-  "-Xexperimental",
-  "-feature",
-  "-language:implicitConversions",
-  "-language:reflectiveCalls"
-)
-
 lazy val versions = new {
-  val drools    = "7.6.0.Final"
-  val shttp     = "1.1.5"
+  val drools    = "7.27.0.Final"
+  val shttp     = "1.7.1"
   val logback   = "1.2.3"
-  val scalatest = "3.0.5"
+  val scalatest = "3.0.8"
 }
 
 
@@ -42,10 +33,4 @@ libraryDependencies ++= Seq(
 initialCommands in console := """
    import dummy._
 """
-
-//resolvers += "jboss-releases" at "https://repository.jboss.org/nexus/content/repositories/releases"
-
-//resolvers += "jboss-jsr94" at "http://repository.jboss.org/nexus/content/groups/public-jboss"
-
-//resolvers += "sonatype-public" at "https://oss.sonatype.org/content/groups/public"
 
