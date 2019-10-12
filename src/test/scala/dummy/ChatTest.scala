@@ -22,7 +22,7 @@ class ChatTest extends FunSuite {
     val response = sttp.get(uri"http://httpbin.org/ip").send()
     val json = parse(response.body.right.value)
     val ip = (json\"origin").extract[String]
-    ip should fullyMatch regex("""\d+[.]\d+[.]\d+[.]\d+""".r)
+    ip should fullyMatch regex("""\d+[.]\d+[.]\d+[.]\d+(,\s*\d+[.]\d+[.]\d+[.]\d+)*""".r)
   }
 
 
