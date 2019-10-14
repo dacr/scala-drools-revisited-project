@@ -22,11 +22,12 @@ end
 
 // ------------------------------------------------------------------
 // ne pas utiliser la notation props.x ou si et seulement si toutes
-// les instances dispose de la propriété x
+// les instances dispose de la propriété x (ce qui est le cas ici!)
 
 rule "machin with x"
 when
-  $event: GenericEvent(kind=="machin", props["x"] =="1")
+  //$event: GenericEvent(kind=="machin", props["x"] =="1")
+  $event: GenericEvent(kind=="machin", props.x == "1")
 then
   logger.info("machin with x fired up : "+$event)
   insert(new EventDecision("machin with x fired up : "+$event))
@@ -34,11 +35,13 @@ end
 
 
 // ------------------------------------------------------------------
-// ne pas utiliser la notation props.y
+// ne pas utiliser la notation props.y ou si et seulement si toutes
+// les instances dispose de la propriété y (ce qui n'est pas le cas ici)
 
 rule "machin with y"
 when
   $event: GenericEvent(kind=="machin", props["y"] =="3")
+  //$event: GenericEvent(kind=="machin", props.y == "3")
 then
   logger.info("machin with y fired up : "+$event)
   insert(new EventDecision("machin with y fired up : "+$event))

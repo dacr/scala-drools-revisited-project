@@ -14,7 +14,7 @@ end
 
 rule "bidule"
 when
-  $bidule: Bidule(name=="John Doe")
+  $bidule: Bidule(name=="John Doe", $name:name)
 then
   logger.info("truc rule fired up "+$bidule)
   insert(new String("blah"))

@@ -321,7 +321,7 @@ class DummyTest extends FunSuite {
     val found = using(kbase.newKieSession(ksConf,ksEnv)) { session =>
       session.setGlobal("logger", LoggerFactory.getLogger("KBPingPong"))
 
-      val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
+      //val clock = session.getSessionClock().asInstanceOf[SessionPseudoClock]
 
       val pongPromise = Promise[Object]()
 
